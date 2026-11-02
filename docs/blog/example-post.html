@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="An example post that shows how to add a post by hand.">
+  <title>felix@tilde ~/blog/example-post</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <header>
+    <nav aria-label="Breadcrumb"><a href="../">felix@tilde ~</a>/<a href="./">blog</a>/example-post</nav>
+  </header>
+  <main>
+    <article>
+      <h1>Example post</h1>
+      <p><time datetime="2026-11-02">2026-11-02</time></p>
+      <p>
+        <mark>
+          This is an example post.
+          To remove it, delete this file and its link in the blog index.
+        </mark>
+      </p>
+      <p>Posts are hand-written HTML files, so adding one takes three steps.</p>
+      <ol>
+        <li>Copy <code>docs/blog/example-post.html</code> to <code>docs/blog/my-post.html</code>.</li>
+        <li>
+          In the copy, update the title, description, breadcrumb, heading and date.
+          Then replace this text with your own.
+        </li>
+        <li>Add a link to the top of the list in <code>docs/blog/index.html</code>:</li>
+      </ol>
+      <pre><code>&lt;li&gt;
+  &lt;time datetime="2026-11-02"&gt;2026-11-02&lt;/time&gt;
+  &lt;a href="my-post.html"&gt;My post&lt;/a&gt;
+&lt;/li&gt;</code></pre>
+      <p>Keep links and asset paths relative, as in this file, so the site works under any base path.</p>
+    </article>
+  </main>
+</body>
+</html>
