@@ -76,6 +76,96 @@ async function readFile(arg) {
   return `cat: ${arg}: Input/output error`;
 }
 
+async function stat(path) {
+  if (isDir(path)) {
+    const children = await Promise.all(listDir(path).map((name) => stat(resolve(`${path}/${name}`))));
+    return { size: 4096, time: Math.max(...children.map(({ time }) => time)) };
+  }
+  const response = await fetch(fileUrl(path));
+  if (!response.ok) throw new Error(response.statusText);
+  // blob, not Content-Length: compressed responses report their compressed size.
+  const { size } = await response.blob();
+  return { size, time: Date.parse(response.headers.get('Last-Modified')) || 0 };
+}
+
+function humanSize(size) {
+  if (size < 1024) return `${size}`;
+  const exponent = Math.floor(Math.log2(size) / 10);
+  return `${(size / 1024 ** exponent).toFixed(1)}${' KMG'[exponent]}`;
+}
+
+function longEntry(
+  name,
+  time,
+  size,
+) {
+  const date = new Date(time);
+  return [
+    name.endsWith('/') ? 'drwxr-xr-x' : '-rw-r--r--',
+    '1 felix felix',
+    size,
+    date.toDateString().slice(4, 10),
+    date.toTimeString().slice(0, 5),
+    name,
+  ].join(' ');
+}
+
+const LS_FLAGS = 'alrth';
+
+async function listFiles(args) {
+  const flags = args.filter((arg) => /^-./.test(arg)).map((arg) => arg.slice(1)).join('');
+  const invalid = [...flags].find((flag) => !LS_FLAGS.includes(flag));
+  if (invalid) return `ls: invalid option -- '${invalid}'`;
+
+  const [arg = '.'] = args.filter((arg) => !/^-./.test(arg));
+  const path = resolve(arg);
+  let entries;
+  if (isFile(path)) {
+    entries = [{ name: path.split('/').pop(), path }];
+  } else if (isDir(path)) {
+    const names = [...(flags.includes('a') ? ['./', '../'] : []), ...listDir(path)];
+    entries = names.map((name) => ({ name, path: resolve(`${path}/${name}`) }));
+  } else {
+    return `ls: cannot access '${arg}': No such file or directory`;
+  }
+
+  if (flags.includes('l') || flags.includes('t')) {
+    try {
+      entries = await Promise.all(entries.map(async (entry) => ({ ...entry, stats: await stat(entry.path) })));
+    } catch {
+      return `ls: ${arg}: Input/output error`;
+    }
+  }
+  if (flags.includes('t')) entries.sort((a, b) => b.stats.time - a.stats.time);
+  if (flags.includes('r')) entries.reverse();
+
+  if (!flags.includes('l')) return entries.map(({ name }) => name).join('  ');
+  const sizes = entries.map(({ stats }) => (flags.includes('h') ? humanSize(stats.size) : `${stats.size}`));
+  const width = Math.max(...sizes.map((size) => size.length));
+  return entries.map(({ name, stats }, index) => longEntry(
+    name,
+    stats.time,
+    sizes[index].padStart(width),
+  ));
+}
+
+function completePath(word) {
+  const [, dir = '', name] = word.match(/^(.*\/)?(.*)$/);
+  if (word === '~' || name === '.' || name === '..') return [`${word}/`];
+  return listDir(resolve(dir)).map((entry) => dir + entry);
+}
+
+const completeDir = (word) => completePath(word).filter((candidate) => candidate.endsWith('/'));
+
+function completeFlags(
+  flags,
+  word,
+) {
+  const used = word.slice(1);
+  if ([...used].some((flag) => !flags.includes(flag))) return [];
+  return [...flags].filter((flag) => !used.includes(flag)).map((flag) => word + flag);
+}
+
 const COMMANDS = new Map([
   ['help', {
     description: 'list all commands',
@@ -95,16 +185,14 @@ const COMMANDS = new Map([
   }],
   ['pwd', { description: 'print the current directory', run: () => cwd }],
   ['ls', {
-    description: 'list a directory or file',
-    run([arg = '.']) {
-      const path = resolve(arg);
-      if (isFile(path)) return path.split('/').pop();
-      if (isDir(path)) return listDir(path).join('  ');
-      return `ls: cannot access '${arg}': No such file or directory`;
-    },
+    description: `list a directory or file, flags: ${[...LS_FLAGS].map((flag) => `-${flag}`).join(' ')}`,
+    flags: LS_FLAGS,
+    complete: completePath,
+    run: listFiles,
   }],
   ['cd', {
     description: 'change directory, home by default',
+    complete: completeDir,
     run([arg = '~']) {
       const path = resolve(arg);
       if (isFile(path)) return `cd: ${arg}: Not a directory`;
@@ -114,6 +202,7 @@ const COMMANDS = new Map([
   }],
   ['cat', {
     description: 'print files',
+    complete: completePath,
     run(args) {
       if (!args.length) return 'cat: missing file operand';
       // Promise.all starts every read now: a later cd must not change what these paths resolve to.
@@ -122,6 +211,7 @@ const COMMANDS = new Map([
   }],
   ['open', {
     description: 'open a file in the browser',
+    complete: completePath,
     run([arg]) {
       if (arg === undefined) return 'open: missing file operand';
       const path = resolve(arg);
@@ -135,7 +225,7 @@ const COMMANDS = new Map([
 
 const keepInputInView = () => input.scrollIntoView({ block: 'nearest' });
 
-async function execute(text) {
+function echo(text) {
   const echoedPrompt = document.createElement('span');
   echoedPrompt.className = 'prompt';
   echoedPrompt.textContent = prompt.textContent;
@@ -145,7 +235,11 @@ async function execute(text) {
   ));
   output.append(entry);
   keepInputInView();
+  return entry;
+}
 
+async function execute(text) {
+  const entry = echo(text);
   const [name, ...args] = text.trim().split(/\s+/);
   if (!name) return;
   const command = COMMANDS.get(name);
@@ -154,8 +248,63 @@ async function execute(text) {
   keepInputInView();
 }
 
+function candidates(
+  before,
+  word,
+) {
+  if (before.trim() === word) return [...COMMANDS.keys()];
+  const command = COMMANDS.get(before.trim().split(/\s+/)[0]);
+  if (command?.flags && word.startsWith('-')) {
+    return completeFlags(
+      command.flags,
+      word,
+    );
+  }
+  return command?.complete?.(word) ?? [];
+}
+
+function commonPrefix(words) {
+  return words.reduce((prefix, word) => {
+    let length = 0;
+    while (length < prefix.length && prefix[length] === word[length]) length += 1;
+    return prefix.slice(0, length);
+  });
+}
+
+function completeInput() {
+  const caret = input.selectionStart;
+  const before = input.value.slice(0, caret);
+  const word = before.match(/\S*$/)[0];
+  const matches = candidates(
+    before,
+    word,
+  ).filter((candidate) => candidate.startsWith(word)).sort();
+  if (!matches.length) return;
+
+  const prefix = commonPrefix(matches);
+  const isDone = matches.length === 1 && !prefix.endsWith('/');
+  if (prefix !== word || isDone) {
+    input.setRangeText(
+      isDone ? `${prefix} ` : prefix,
+      caret - word.length,
+      caret,
+      'end',
+    );
+    return;
+  }
+
+  const entry = echo(input.value);
+  const names = matches.map((match) => match.slice(match.lastIndexOf('/', match.length - 2) + 1));
+  entry.append(line(names.join('  ')));
+  keepInputInView();
+}
+
 input.addEventListener('keydown', (event) => {
-  if (event.key === 'Enter') {
+  if (event.key === 'Tab' && !event.shiftKey) {
+    // Shift+Tab stays native, so keyboard users can still leave the input.
+    event.preventDefault();
+    completeInput();
+  } else if (event.key === 'Enter') {
     const text = input.value;
     input.value = '';
     if (text.trim()) history.push(text);
