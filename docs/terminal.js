@@ -4,6 +4,7 @@ const FILES = [
   'blog/example-post.html',
   'blog/index.html',
   'index.html',
+  'quit.js',
   'style.css',
   'terminal.js',
   'theme.js',
