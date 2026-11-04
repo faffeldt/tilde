@@ -6,17 +6,30 @@
   <meta name="description" content="Felix's personal home page and blog.">
   <title>felix@tilde ~</title>
   <link rel="stylesheet" href="style.css">
+  <script src="terminal.js" defer></script>
 </head>
 <body>
-  <header>felix@tilde ~</header>
-  <main>
-    <h1>Hi, I'm Felix.</h1>
-    <p>Welcome to my home page.</p>
-    <p><mark>Placeholder: replace this with a short intro about yourself.</mark></p>
+  <noscript>
+    <h1>Felix</h1>
     <p>
       Read the <a href="blog/">blog</a>
       or find me on <a href="https://github.com/faffeldt">GitHub</a>.
     </p>
+  </noscript>
+  <main id="terminal" hidden>
+    <div id="output" role="log"></div>
+    <div id="input-line">
+      <span id="prompt" class="prompt"></span>
+      <input
+        id="command"
+        type="text"
+        aria-label="Command"
+        autocapitalize="off"
+        autocorrect="off"
+        autocomplete="off"
+        spellcheck="false"
+      >
+    </div>
   </main>
 </body>
 </html>
