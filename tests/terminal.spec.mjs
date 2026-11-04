@@ -6,6 +6,21 @@ const disk = (file) => readFileSync(`docs/${file}`, 'utf8');
 const input = (page) => page.getByRole('textbox', { name: 'Command' });
 const log = (page) => page.getByRole('log');
 const promptText = (page) => page.locator('#prompt').textContent();
+const currentTheme = (page) => page.locator('html').getAttribute('data-theme');
+const background = (page) => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+
+function luminance(hex) {
+  const channels = hex.match(/[0-9a-f]{2}/gi).map((channel) => {
+    const value = parseInt(channel, 16) / 255;
+    return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+}
+
+function contrast(first, second) {
+  const [dark, light] = [luminance(first), luminance(second)].sort((a, b) => a - b);
+  return (light + 0.05) / (dark + 0.05);
+}
 
 async function run(page, command) {
   await input(page).fill(command);
@@ -95,7 +110,7 @@ test.describe('with JS', () => {
   });
 
   test('ls lists home, a path, a file and reports a missing path', async ({ page }) => {
-    await expectOutput(page, 'ls', 'CNAME blog/ index.html style.css terminal.js');
+    await expectOutput(page, 'ls', 'CNAME blog/ index.html style.css terminal.js theme.js');
     await expectOutput(page, 'ls blog', 'example-post.html index.html');
     await expectOutput(page, 'ls /', 'home/');
     await expectOutput(page, 'ls ~/blog/index.html', 'index.html');
@@ -193,7 +208,7 @@ test.describe('with JS', () => {
   test('help lists every command and links the repository', async ({ page }) => {
     await run(page, 'help');
     const text = await log(page).innerText();
-    for (const command of ['help', 'whoami', 'pwd', 'ls', 'cd', 'cat', 'open', 'clear']) {
+    for (const command of ['help', 'whoami', 'pwd', 'ls', 'cd', 'cat', 'open', 'theme', 'clear']) {
       expect(text).toMatch(new RegExp(`^${command} +\\S`, 'm'));
     }
     const repository = 'https://github.com/faffeldt/tilde';
@@ -205,6 +220,91 @@ test.describe('with JS', () => {
     const description = 'I love to build. I focus on building complex things as simple as possible.';
     await expectOutput(page, 'whoami', `felix ${description} ${github}`);
     await expect(page.getByRole('link', { name: github })).toHaveAttribute('href', github);
+  });
+
+  test('theme lists the themes and marks the current one', async ({ page }) => {
+    await run(page, 'clear');
+    await run(page, 'theme');
+    const lines = (await log(page).innerText()).split('\n').slice(1);
+    const themes = await page.evaluate('THEMES');
+    expect(lines).toEqual(themes.map((name, index) => `${index === 0 ? '*' : ' '} ${name}`));
+  });
+
+  test('theme switches colors, and reports an unknown name without switching', async ({ page }) => {
+    const before = await background(page);
+    await expectOutput(page, 'theme github-light', '');
+    expect(await currentTheme(page)).toBe('github-light');
+    expect(await background(page)).not.toBe(before);
+
+    await expectOutput(page, 'theme x', 'theme: x: No such theme');
+    expect(await currentTheme(page)).toBe('github-light');
+  });
+
+  test('theme random always picks another theme and reports it', async ({ page }) => {
+    for (let i = 0; i < 20; i++) {
+      const before = await currentTheme(page);
+      await run(page, 'clear');
+      await run(page, 'theme random');
+      await expect(page.locator('html')).not.toHaveAttribute('data-theme', before);
+      await expect(log(page)).toContainText(await currentTheme(page));
+    }
+  });
+
+  test('the theme survives a reload and reaches the blog', async ({ page }) => {
+    await run(page, 'theme nord');
+    const nord = await background(page);
+    await page.reload();
+    expect(await currentTheme(page)).toBe('nord');
+    await page.goto('/blog/');
+    expect(await background(page)).toBe(nord);
+  });
+
+  test('an outdated saved theme falls back to the default', async ({ page }) => {
+    await page.evaluate(() => localStorage.setItem('theme', 'gone'));
+    await page.reload();
+    expect(await currentTheme(page)).toBe('tilde');
+  });
+
+  test('themes still apply when storage is blocked', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(window, 'localStorage', {
+        get() {
+          throw new Error('blocked');
+        },
+      });
+    });
+    await page.reload();
+    await expectOutput(page, 'theme nord', '');
+    expect(await currentTheme(page)).toBe('nord');
+  });
+
+  test('every theme is defined and readable', async ({ page }) => {
+    const themes = await page.evaluate('THEMES');
+    const palettes = new Set();
+    for (const theme of themes) {
+      await page.evaluate((name) => applyTheme(name), theme);
+      const colors = await page.evaluate(() => {
+        const style = getComputedStyle(document.documentElement);
+        return Object.fromEntries(
+          ['bg', 'text', 'muted', 'link', 'prompt', 'code-bg', 'mark']
+            .map((name) => [name, style.getPropertyValue(`--${name}`).trim()]),
+        );
+      });
+      palettes.add(JSON.stringify(colors));
+      for (const [foreground, back] of [
+        ['text', 'bg'],
+        ['muted', 'bg'],
+        ['link', 'bg'],
+        ['prompt', 'bg'],
+        ['text', 'code-bg'],
+        ['text', 'mark'],
+      ]) {
+        expect(contrast(colors[foreground], colors[back]), `${theme}: ${foreground} on ${back}`)
+          .toBeGreaterThanOrEqual(4.5);
+      }
+    }
+    // A listed theme without a CSS block would silently inherit the default palette.
+    expect(palettes.size).toBe(themes.length);
   });
 
   test('arrow keys walk the command history', async ({ page }) => {
