@@ -58,7 +58,11 @@ function link(url) {
 
 function setCwd(path) {
   cwd = path;
-  prompt.textContent = `felix@tilde:${cwd.replace(HOME, '~')}$ `;
+  const shown = cwd.replace(
+    HOME,
+    '~',
+  );
+  prompt.textContent = `felix@tilde:${shown}$ `;
 }
 
 async function readFile(arg) {
