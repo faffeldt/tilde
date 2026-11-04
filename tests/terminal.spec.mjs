@@ -100,7 +100,45 @@ test.describe('with JS', () => {
     await expectOutput(page, 'ls /', 'home/');
     await expectOutput(page, 'ls ~/blog/index.html', 'index.html');
     await expectOutput(page, 'ls x', "ls: cannot access 'x': No such file or directory");
-    await expectOutput(page, 'ls -la', "ls: cannot access '-la': No such file or directory");
+  });
+
+  test('ls -a adds the directory entries, -r reverses', async ({ page }) => {
+    await expectOutput(page, 'ls -a blog', './ ../ example-post.html index.html');
+    await expectOutput(page, 'ls -r blog', 'index.html example-post.html');
+    await expectOutput(page, 'ls -ar blog', 'index.html example-post.html ../ ./');
+    await expectOutput(page, 'ls -r -a blog', 'index.html example-post.html ../ ./');
+  });
+
+  test('ls -l prints exact sizes, -h makes them human readable', async ({ page }) => {
+    const size = Buffer.byteLength(disk('terminal.js'));
+    await run(page, 'ls -l terminal.js');
+    await expect(log(page)).toContainText(
+      new RegExp(`-rw-r--r-- 1 felix felix ${size} \\w{3} \\d{2} \\d{2}:\\d{2} terminal\\.js`),
+    );
+    await run(page, 'ls -lh terminal.js');
+    await expect(log(page)).toContainText(`felix ${(size / 1024).toFixed(1)}K `);
+    await run(page, 'ls -l');
+    await expect(log(page)).toContainText(/drwxr-xr-x 1 felix felix +4096 .* blog\//);
+    await run(page, 'ls -la');
+    await expect(log(page)).toContainText(/drwxr-xr-x 1 felix felix +4096 .* \.\.\//);
+  });
+
+  test('ls -t sorts newest first, -r flips it', async ({ page }) => {
+    const modified = (file, date) => page.route(`**/${file}`, (route) => route.fulfill({
+      body: file,
+      headers: { 'Last-Modified': new Date(date).toUTCString() },
+    }));
+    await modified('blog/index.html', '2020-01-01');
+    await modified('blog/example-post.html', '2024-01-01');
+    await expectOutput(page, 'ls -t blog', 'example-post.html index.html');
+    await expectOutput(page, 'ls -tr blog', 'index.html example-post.html');
+  });
+
+  test('ls reports an invalid flag and a failed stat', async ({ page }) => {
+    await expectOutput(page, 'ls -x', "ls: invalid option -- 'x'");
+    await expectOutput(page, 'ls --all', "ls: invalid option -- '-'");
+    await page.route('**/style.css', (route) => route.abort());
+    await expectOutput(page, 'ls -l style.css', 'ls: style.css: Input/output error');
   });
 
   test('cd resolves .., ~, no argument, / and reports file and missing', async ({ page }) => {
@@ -220,6 +258,78 @@ test.describe('with JS', () => {
       await input(page).press(key);
       await expect(input(page)).toHaveValue(value);
     }
+  });
+
+  test('tab completes commands, paths and flags', async ({ page }) => {
+    for (const [typed, completed] of [
+      ['cl', 'clear '],
+      ['  wh', '  whoami '],
+      ['cat bl', 'cat blog/'],
+      ['cat blog/e', 'cat blog/example-post.html '],
+      ['cat ~/st', 'cat ~/style.css '],
+      ['cat /ho', 'cat /home/'],
+      ['ls ~', 'ls ~/'],
+      ['ls ..', 'ls ../'],
+      ['cd ', 'cd blog/'],
+      ['ls -lart', 'ls -larth '],
+      ['ls -l sty', 'ls -l style.css '],
+      ['cat blog/index.html ter', 'cat blog/index.html terminal.js '],
+    ]) {
+      await input(page).fill(typed);
+      await input(page).press('Tab');
+      await expect(input(page)).toHaveValue(completed);
+    }
+  });
+
+  test('tab extends to the common prefix before listing', async ({ page }) => {
+    await page.evaluate(() => {
+      COMMANDS.set('demo', { complete: () => ['alpha-one', 'alpha-two'] });
+    });
+    await input(page).fill('demo a');
+    await input(page).press('Tab');
+    await expect(input(page)).toHaveValue('demo alpha-');
+  });
+
+  test('tab lists ambiguous matches sorted, and keeps the input', async ({ page }) => {
+    for (const [typed, expected] of [
+      ['', 'cat cd clear help ls open pwd whoami'],
+      ['c', 'cat cd clear'],
+      ['ls -', '-a -h -l -r -t'],
+      ['ls -l', '-la -lh -lr -lt'],
+      ['ls ', 'CNAME blog/ index.html style.css terminal.js'],
+      ['ls blog/', 'example-post.html index.html'],
+    ]) {
+      await run(page, 'clear');
+      await input(page).fill(typed);
+      await input(page).press('Tab');
+      await expect(input(page)).toHaveValue(typed);
+      await expect(log(page)).toHaveText(`felix@tilde:~$ ${typed} ${expected}`.replace(/\s+/g, ' '), {
+        useInnerText: true,
+      });
+    }
+  });
+
+  test('tab does nothing without a match', async ({ page }) => {
+    await run(page, 'clear');
+    for (const typed of ['xyz', 'cat xyz', 'clear ', 'cat -', 'ls -x', 'ls -larth']) {
+      await input(page).fill(typed);
+      await input(page).press('Tab');
+      await expect(input(page)).toHaveValue(typed);
+    }
+    await expect(log(page)).toHaveText('');
+  });
+
+  test('tab completes at the caret and keeps what follows it', async ({ page }) => {
+    await input(page).fill('cat st index.html');
+    await input(page).evaluate((element) => element.setSelectionRange(6, 6));
+    await input(page).press('Tab');
+    await expect(input(page)).toHaveValue('cat style.css  index.html');
+    expect(await input(page).evaluate((element) => element.selectionStart)).toBe(14);
+  });
+
+  test('shift+tab leaves the input', async ({ page }) => {
+    await input(page).press('Shift+Tab');
+    await expect(input(page)).not.toBeFocused();
   });
 
   test('unknown and inherited names are not commands', async ({ page }) => {
