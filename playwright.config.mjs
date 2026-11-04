@@ -8,6 +8,5 @@ export default defineConfig({
   webServer: {
     command: 'miniserve docs --index index.html --interfaces 127.0.0.1 --port 8765',
     url,
-    reuseExistingServer: false,
   },
 });

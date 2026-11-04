@@ -22,12 +22,8 @@ a {
 }
 
 header,
-main {
+main:not(#terminal) {
   max-width: 80ch;
-}
-
-#terminal {
-  max-width: none;
 }
 
 #output {
