@@ -6,6 +6,7 @@ const FILES = [
   'index.html',
   'style.css',
   'terminal.js',
+  'theme.js',
 ];
 const PATHS = FILES.map((file) => `${HOME}/${file}`);
 
@@ -218,6 +219,22 @@ const COMMANDS = new Map([
       if (isDir(path)) return `open: ${arg}: Is a directory`;
       if (!isFile(path)) return `open: ${arg}: No such file or directory`;
       location.href = fileUrl(path);
+    },
+  }],
+  ['theme', {
+    description: 'list themes, or switch to a named or random one',
+    run([arg]) {
+      if (arg === undefined) {
+        return THEMES.map((name) => `${name === currentTheme() ? '*' : ' '} ${name}`);
+      }
+      if (arg === 'random') {
+        const others = THEMES.filter((name) => name !== currentTheme());
+        const picked = others[Math.floor(Math.random() * others.length)];
+        saveTheme(picked);
+        return picked;
+      }
+      if (!THEMES.includes(arg)) return `theme: ${arg}: No such theme`;
+      saveTheme(arg);
     },
   }],
   ['clear', { description: 'empty the output', run: () => output.replaceChildren() }],

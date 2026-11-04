@@ -6,6 +6,106 @@
   --link: #79c0ff;
   --prompt: #7ee787;
   --code-bg: #1a2029;
+  --mark: #4a3f12;
+}
+
+[data-theme='github-light'] {
+  color-scheme: light;
+  --bg: #ffffff;
+  --text: #1f2328;
+  --muted: #59636e;
+  --link: #0969da;
+  --prompt: #1a7f37;
+  --code-bg: #f6f8fa;
+  --mark: #fff8c5;
+}
+
+[data-theme='dracula'] {
+  color-scheme: dark;
+  --bg: #282a36;
+  --text: #f8f8f2;
+  --muted: #b0b8d8;
+  --link: #8be9fd;
+  --prompt: #50fa7b;
+  --code-bg: #343746;
+  --mark: #5b5326;
+}
+
+[data-theme='nord'] {
+  color-scheme: dark;
+  --bg: #2e3440;
+  --text: #d8dee9;
+  --muted: #a9b4c6;
+  --link: #88c0d0;
+  --prompt: #a3be8c;
+  --code-bg: #3b4252;
+  --mark: #5c5030;
+}
+
+[data-theme='gruvbox-dark'] {
+  color-scheme: dark;
+  --bg: #282828;
+  --text: #ebdbb2;
+  --muted: #a89984;
+  --link: #83a598;
+  --prompt: #b8bb26;
+  --code-bg: #3c3836;
+  --mark: #5f4f14;
+}
+
+[data-theme='gruvbox-light'] {
+  color-scheme: light;
+  --bg: #fbf1c7;
+  --text: #3c3836;
+  --muted: #665c54;
+  --link: #076678;
+  --prompt: #6c670c;
+  --code-bg: #ebdbb2;
+  --mark: #fabd2f;
+}
+
+[data-theme='solarized-dark'] {
+  color-scheme: dark;
+  --bg: #002b36;
+  --text: #93a1a1;
+  --muted: #839496;
+  --link: #4ba3e3;
+  --prompt: #859900;
+  --code-bg: #073642;
+  --mark: #3a3200;
+}
+
+[data-theme='solarized-light'] {
+  color-scheme: light;
+  --bg: #fdf6e3;
+  --text: #073642;
+  --muted: #586e75;
+  --link: #1a6ba8;
+  --prompt: #5f6e00;
+  --code-bg: #eee8d5;
+  --mark: #f2dc8c;
+}
+
+[data-theme='catppuccin-mocha'] {
+  color-scheme: dark;
+  --bg: #1e1e2e;
+  --text: #cdd6f4;
+  --muted: #a6adc8;
+  --link: #89b4fa;
+  --prompt: #a6e3a1;
+  --code-bg: #313244;
+  --mark: #5a4f2a;
+}
+
+[data-theme='catppuccin-latte'] {
+  color-scheme: light;
+  --bg: #eff1f5;
+  --text: #4c4f69;
+  --muted: #5c5f77;
+  --link: #1a5fe0;
+  --prompt: #2c7a1c;
+  --code-bg: #dce0e8;
+  --mark: #f5dfa0;
 }
 
 body {
@@ -66,7 +166,7 @@ h1 {
 }
 
 mark {
-  background: #4a3f12;
+  background: var(--mark);
   color: var(--text);
 }
 

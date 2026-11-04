@@ -46,3 +46,8 @@ mise run test
 4. Add the post to the file list in `docs/terminal.js`.
 
 Keep links and asset paths relative, so the site works under any base path.
+
+## Add a theme
+
+1. Add a block with the theme's colors to `docs/style.css`, after the existing theme blocks.
+2. Add its name to `THEMES` in `docs/theme.js`.
