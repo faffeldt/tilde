@@ -61,6 +61,15 @@ test.describe('with JS', () => {
     await expect(input(page)).not.toBeFocused();
   });
 
+  test('clicking while scrolled up keeps the reading position', async ({ page }) => {
+    await run(page, 'cat terminal.js');
+    await expect(log(page)).toContainText('input.focus();');
+    await page.evaluate(() => scrollTo(0, 0));
+    await log(page).click({ position: { x: 1, y: 1 } });
+    await expect(input(page)).toBeFocused();
+    expect(await page.evaluate(() => scrollY)).toBe(0);
+  });
+
   test('empty command only echoes the prompt', async ({ page }) => {
     await expectOutput(page, '', '');
   });
@@ -238,8 +247,7 @@ test.describe('with JS', () => {
   });
 
   test('file list equals the files in docs/ without dotfiles', async ({ page }) => {
-    // --others includes files not added yet, so this holds before and after they are committed.
-    const files = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', 'docs'])
+    const files = execFileSync('git', ['ls-files', 'docs'])
       .toString()
       .trim()
       .split('\n')
