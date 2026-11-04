@@ -1,30 +1,19 @@
 :root {
-  color-scheme: light dark;
-  --bg: #fdfdfb;
-  --text: #24262a;
-  --muted: #62666d;
-  --link: #0b57a4;
-  --code-bg: #f0f0ec;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #16181c;
-    --text: #e4e4e0;
-    --muted: #a3a7ae;
-    --link: #8ab4f8;
-    --code-bg: #24272d;
-  }
+  color-scheme: dark;
+  --bg: #0d1117;
+  --text: #d6dbe1;
+  --muted: #98a1ab;
+  --link: #79c0ff;
+  --prompt: #7ee787;
+  --code-bg: #1a2029;
 }
 
 body {
-  max-width: 65ch;
-  margin: 0 auto;
-  padding: 1.5rem 1.25rem 3rem;
+  margin: 0;
+  padding: 1rem;
   background: var(--bg);
   color: var(--text);
-  font-family: system-ui, sans-serif;
-  line-height: 1.6;
+  font: 1rem/1.5 ui-monospace, monospace;
   overflow-wrap: break-word;
 }
 
@@ -33,31 +22,62 @@ a {
 }
 
 header,
-code,
-pre,
-time {
-  font-family: ui-monospace, monospace;
+main {
+  max-width: 80ch;
+}
+
+#terminal {
+  max-width: none;
+}
+
+#output {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+#input-line {
+  display: flex;
+}
+
+.prompt {
+  color: var(--prompt);
+  white-space: pre-wrap;
+}
+
+#command {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
 }
 
 header,
 time {
   color: var(--muted);
-  font-size: 0.9rem;
 }
 
 header {
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
 }
 
 h1 {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   line-height: 1.25;
+}
+
+mark {
+  background: #4a3f12;
+  color: var(--text);
 }
 
 code,
 pre {
   background: var(--code-bg);
-  font-size: 0.9em;
+  font-family: inherit;
 }
 
 code {
@@ -74,5 +94,4 @@ pre {
 
 pre code {
   padding: 0;
-  font-size: 1em;
 }
