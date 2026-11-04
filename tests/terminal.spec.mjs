@@ -110,7 +110,7 @@ test.describe('with JS', () => {
   });
 
   test('ls lists home, a path, a file and reports a missing path', async ({ page }) => {
-    await expectOutput(page, 'ls', 'CNAME blog/ index.html style.css terminal.js theme.js');
+    await expectOutput(page, 'ls', 'CNAME blog/ index.html quit.js style.css terminal.js theme.js');
     await expectOutput(page, 'ls blog', 'example-post.html index.html');
     await expectOutput(page, 'ls /', 'home/');
     await expectOutput(page, 'ls ~/blog/index.html', 'index.html');
@@ -230,6 +230,52 @@ test.describe('with JS', () => {
     await expect(page.getByRole('heading', { name: 'Example post' })).toBeVisible();
     await page.getByRole('link', { name: 'felix@tilde ~' }).click();
     await expect(input(page)).toBeFocused();
+  });
+
+  for (const key of ['q', 'Escape']) {
+    test(`${key} goes back to the terminal from an opened post`, async ({ page }) => {
+      await run(page, 'open blog/example-post.html');
+      await expect(page.getByText('press q or esc to quit')).toBeVisible();
+      await page.keyboard.press(key);
+      await expect(input(page)).toBeFocused();
+      await page.goForward();
+      await expect(page).toHaveURL(/\/blog\/example-post\.html$/);
+    });
+  }
+
+  test('quitting leads to the terminal when it did not open the page', async ({ page }) => {
+    await run(page, 'open blog/index.html');
+    await page.getByRole('link', { name: 'Example post' }).click();
+    await expect(page).toHaveURL(/\/blog\/example-post\.html$/);
+    await page.keyboard.press('q');
+    await expect(input(page)).toBeFocused();
+
+    await page.goto('/blog/example-post.html');
+    await page.keyboard.press('Escape');
+    await expect(input(page)).toBeFocused();
+  });
+
+  test('pressing q twice during a slow load still stops at the terminal', async ({ page }) => {
+    await run(page, 'open blog/index.html');
+    await page.getByRole('link', { name: 'felix@tilde ~' }).click();
+    await run(page, 'open blog/example-post.html');
+    await expect(page.getByRole('heading', { name: 'Example post' })).toBeVisible();
+    await page.route(/:\d+\/$/, async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      await route.continue();
+    });
+    await page.keyboard.press('q');
+    await page.keyboard.press('q');
+    await expect(input(page)).toBeFocused();
+    await expect(page).toHaveURL(/:\d+\/$/);
+  });
+
+  test('browser shortcuts with q do not quit', async ({ page }) => {
+    await run(page, 'open blog/example-post.html');
+    await expect(page.getByRole('heading', { name: 'Example post' })).toBeVisible();
+    await page.keyboard.press('Alt+q');
+    await page.evaluate(() => new Promise(requestAnimationFrame));
+    await expect(page).toHaveURL(/\/blog\/example-post\.html$/);
   });
 
   test('open reports directory, missing file and missing operand', async ({ page }) => {
@@ -398,7 +444,7 @@ test.describe('with JS', () => {
       ['c', 'cat cd clear'],
       ['ls -', '-a -h -l -r -t'],
       ['ls -l', '-la -lh -lr -lt'],
-      ['ls ', 'CNAME blog/ index.html style.css terminal.js theme.js'],
+      ['ls ', 'CNAME blog/ index.html quit.js style.css terminal.js theme.js'],
       ['ls blog/', 'example-post.html index.html'],
       ['theme catppuccin-', 'catppuccin-latte catppuccin-mocha'],
     ]) {
@@ -481,5 +527,6 @@ test.describe('without JS', () => {
     await expect(page.getByRole('link', { name: 'GitHub' })).toHaveAttribute('href', 'https://github.com/faffeldt');
     await page.getByRole('link', { name: 'blog' }).click();
     await expect(page.getByRole('heading', { name: 'Blog' })).toBeVisible();
+    await expect(page.getByText('press q or esc to quit')).toHaveCount(0);
   });
 });
