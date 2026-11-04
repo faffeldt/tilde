@@ -223,6 +223,7 @@ const COMMANDS = new Map([
   }],
   ['theme', {
     description: 'list themes, or switch to a named or random one',
+    complete: () => [...THEMES, 'random'],
     run([arg]) {
       if (arg === undefined) {
         return THEMES.map((name) => `${name === currentTheme() ? '*' : ' '} ${name}`);
