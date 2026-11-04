@@ -374,6 +374,8 @@ test.describe('with JS', () => {
       ['ls -lart', 'ls -larth '],
       ['ls -l sty', 'ls -l style.css '],
       ['cat blog/index.html ter', 'cat blog/index.html terminal.js '],
+      ['theme dr', 'theme dracula '],
+      ['theme ra', 'theme random '],
     ]) {
       await input(page).fill(typed);
       await input(page).press('Tab');
@@ -392,12 +394,13 @@ test.describe('with JS', () => {
 
   test('tab lists ambiguous matches sorted, and keeps the input', async ({ page }) => {
     for (const [typed, expected] of [
-      ['', 'cat cd clear help ls open pwd whoami'],
+      ['', 'cat cd clear help ls open pwd theme whoami'],
       ['c', 'cat cd clear'],
       ['ls -', '-a -h -l -r -t'],
       ['ls -l', '-la -lh -lr -lt'],
-      ['ls ', 'CNAME blog/ index.html style.css terminal.js'],
+      ['ls ', 'CNAME blog/ index.html style.css terminal.js theme.js'],
       ['ls blog/', 'example-post.html index.html'],
+      ['theme catppuccin-', 'catppuccin-latte catppuccin-mocha'],
     ]) {
       await run(page, 'clear');
       await input(page).fill(typed);
