@@ -33,14 +33,14 @@ describe('completing the shell', () => {
   });
 
   test.each([
-    ['', 'cat cd clear help ls open pwd theme whoami'],
+    ['', 'cat cd clear help ls open pwd theme tree whoami'],
     ['c', 'cat cd clear'],
     ['cd ', 'blog/ lib/'],
     ['ls -', '-a -h -l -r -t'],
     ['ls -l', '-la -lh -lr -lt'],
     ['ls ', 'CNAME about.html blog/ index.html lib/ quit.js style.css terminal.js theme.js'],
     ['ls blog/', 'example-post.html index.html'],
-    ['ls lib/', 'complete.js fs.js history.js ls.js shell.js'],
+    ['ls lib/', 'complete.js fs.js history.js ls.js shell.js tree.js'],
     ['theme catppuccin-', 'catppuccin-latte catppuccin-mocha'],
   ])('%j lists %s', (before, names) => {
     expect(shell.complete(before)).toEqual({ word: before.match(/\S*$/u)[0], list: names.split(' ') });

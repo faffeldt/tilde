@@ -145,7 +145,7 @@ describe('theme', () => {
 test('help lists every command and links the repository', async () => {
   const { shell } = setup();
   const lines = await shell.run('help');
-  const commands = ['help', 'whoami', 'pwd', 'ls', 'cd', 'cat', 'open', 'theme', 'clear'];
+  const commands = ['help', 'whoami', 'pwd', 'ls', 'tree', 'cd', 'cat', 'open', 'theme', 'clear'];
   expect(lines.slice(0, -2)).toEqual(commands.map((name) => expect.stringMatching(new RegExp(`^${name} +\\S`, 'u'))));
   expect(lines.slice(-2)).toEqual(['source code:', { link: 'https://github.com/faffeldt/tilde' }]);
 });

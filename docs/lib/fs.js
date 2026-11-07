@@ -11,6 +11,7 @@ export const FILES = [
   'lib/history.js',
   'lib/ls.js',
   'lib/shell.js',
+  'lib/tree.js',
   'quit.js',
   'style.css',
   'terminal.js',

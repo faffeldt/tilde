@@ -1,6 +1,7 @@
 import { complete, completeDir, completePath } from './complete.js';
 import { displayPath, fileUrl, HOME, isDir, isFile, resolve } from './fs.js';
 import { LS_FLAGS, ls } from './ls.js';
+import { tree } from './tree.js';
 
 const REPOSITORY = 'https://github.com/faffeldt/tilde';
 const GITHUB = 'https://github.com/faffeldt';
@@ -75,6 +76,14 @@ const COMMANDS = new Map([
       flags: LS_FLAGS,
       complete: completePath,
       run: ls,
+    },
+  ],
+  [
+    'tree',
+    {
+      description: 'print a directory as a tree, -L limits the depth',
+      complete: completeDir,
+      run: tree,
     },
   ],
   [
