@@ -1,6 +1,7 @@
 const HOME = '/home/felix';
 const FILES = [
   'CNAME',
+  'about.html',
   'blog/example-post.html',
   'blog/index.html',
   'index.html',
@@ -178,12 +179,22 @@ const COMMANDS = new Map([
     ],
   }],
   ['whoami', {
-    description: 'describe Felix',
-    run: () => [
-      'felix',
-      'I love to build. I focus on building complex things as simple as possible.',
-      link('https://github.com/faffeldt'),
-    ],
+    description: 'describe Felix; -v or --verbose opens the full profile',
+    complete: () => ['-v', '--verbose'],
+    run(args) {
+      if (args.length === 1 && (args[0] === '-v' || args[0] === '--verbose')) {
+        location.href = fileUrl(`${HOME}/about.html`);
+        return;
+      }
+      if (args.length) return `whoami: unrecognized argument: ${args[0]}`;
+      return [
+        'felix',
+        'I love to build. I focus on building complex things as simple as possible.',
+        'Software engineer working across systems programming and backend/infra tooling.',
+        'Use whoami -v to read more.',
+        link('https://github.com/faffeldt'),
+      ];
+    },
   }],
   ['pwd', { description: 'print the current directory', run: () => cwd }],
   ['ls', {
