@@ -8,9 +8,19 @@ description = "Preview the site at http://localhost:8000"
 run = "miniserve docs --index index.html --interfaces 127.0.0.1 --port 8000"
 
 [tasks.check]
-description = "Check local links and assets"
-run = "lychee --offline --no-progress --index-files index.html docs"
+description = "Lint, check formatting, and check local links and assets"
+run = [
+  "npx biome ci --error-on-warnings",
+  "lychee --offline --no-progress --index-files index.html docs",
+]
+
+[tasks.fmt]
+description = "Format and apply safe lint fixes"
+run = "npx biome check --write"
 
 [tasks.test]
-description = "Run the browser tests against a local server"
-run = "npx playwright test"
+description = "Run the unit tests, then the browser tests against a local server"
+run = [
+  "npx vitest run",
+  "npx playwright test",
+]

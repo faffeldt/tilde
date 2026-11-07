@@ -113,7 +113,9 @@ body {
   padding: 1rem;
   background: var(--bg);
   color: var(--text);
-  font: 1rem/1.5 ui-monospace, monospace;
+  font:
+    1rem / 1.5 ui-monospace,
+    monospace;
   overflow-wrap: break-word;
 }
 
@@ -185,6 +187,7 @@ pre {
   padding: 0.75rem 1rem;
   border-radius: 4px;
   overflow-x: auto;
+  /* biome-ignore lint/suspicious/useBaseline: progressive enhancement, browsers without it keep their scrollbar. */
   scrollbar-color: var(--muted) var(--code-bg);
 }
 

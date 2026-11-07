@@ -19,10 +19,11 @@ function applyTheme(name) {
 
 function saveTheme(name) {
   applyTheme(name);
-  // Storage can be blocked: the theme then still applies, until the next page load.
   try {
     localStorage.setItem('theme', name);
-  } catch {}
+  } catch {
+    // Storage can be blocked: the theme then still applies, until the next page load.
+  }
 }
 
 function savedTheme() {
@@ -35,3 +36,6 @@ function savedTheme() {
 
 const saved = savedTheme();
 applyTheme(THEMES.includes(saved) ? saved : THEMES[0]);
+
+// The terminal module reads this; it runs after this blocking script, so the page never paints the wrong theme.
+globalThis.themes = { names: THEMES, current: currentTheme, save: saveTheme };
