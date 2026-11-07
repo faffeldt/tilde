@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "skills": {
+    "felix-awesome-commit-message": {
+      "source": "faffeldt/agents",
+      "sourceType": "github",
+      "skillPath": "skills/felix-skills/felix-awesome-commit-message/SKILL.md",
+      "computedHash": "68d2899eac383547e56ce76414b3fab0c93e6534c9e919c68304359f2b5d766c"
+    },
+    "grill-me": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/productivity/grill-me/SKILL.md",
+      "computedHash": "9cdbb4b8f7a3aeaef82e6230c9e823500d4a8a1214c726cf342cf9829d34fc7d"
+    },
+    "grill-with-docs": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/grill-with-docs/SKILL.md",
+      "computedHash": "35e62aa423aaeab6a414bcac273f56dfb17802ef2334b41b6a3b00f28196c8cf"
+    },
+    "grilling": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/productivity/grilling/SKILL.md",
+      "computedHash": "e40cc1d348f6d935e28f1e24474302d7368f0a400429271a43b35fe154891dc5"
+    },
+    "minifaktur": {
+      "source": "faffeldt/agents",
+      "sourceType": "github",
+      "skillPath": "skills/minifaktur/minifaktur/SKILL.md",
+      "computedHash": "155cf56423ae5db73253f48c4c23eba1076666de31d519292598d9caa4d2e2a2"
+    },
+    "minifaktur-contract": {
+      "source": "faffeldt/agents",
+      "sourceType": "github",
+      "skillPath": "skills/minifaktur/minifaktur-contract/SKILL.md",
+      "computedHash": "1302bd991e206c8604e5deec65559c791b21a4e94542a672383f4abd8efaf34b"
+    },
+    "minifaktur-findings": {
+      "source": "faffeldt/agents",
+      "sourceType": "github",
+      "skillPath": "skills/minifaktur/minifaktur-findings/SKILL.md",
+      "computedHash": "1f0145f2797f7855ca43b1303a687f60bb35a198ebe94d349ee9fc877e51c46d"
+    },
+    "minifaktur-implement": {
+      "source": "faffeldt/agents",
+      "sourceType": "github",
+      "skillPath": "skills/minifaktur/minifaktur-implement/SKILL.md",
+      "computedHash": "a320c75e96b88151cd724e75bab72713077d9e1c118ad332fe8ffc872888f1c1"
+    },
+    "minifaktur-orchestrator": {
+      "source": "faffeldt/agents",
+      "sourceType": "github",
+      "skillPath": "skills/minifaktur/minifaktur-orchestrator/SKILL.md",
+      "computedHash": "e2039bbdfd9e2b3231c657e3c7be59d0076a7f703e9b0e081a9d26c154955504"
+    },
+    "minifaktur-publish": {
+      "source": "faffeldt/agents",
+      "sourceType": "github",
+      "skillPath": "skills/minifaktur/minifaktur-publish/SKILL.md",
+      "computedHash": "b2b6c2075aa7462781dfeafc3beddf32fdfe945b125c821262b86130688ab948"
+    },
+    "minifaktur-review-architecture": {
+      "source": "faffeldt/agents",
+      "sourceType": "github",
+      "skillPath": "skills/minifaktur/minifaktur-review-architecture/SKILL.md",
+      "computedHash": "2b292d62686e4f63d6117d98b4f44c66a4b5f52a3419897722623f9a4645a0d5"
+    },
+    "minifaktur-review-completeness": {
+      "source": "faffeldt/agents",
+      "sourceType": "github",
+      "skillPath": "skills/minifaktur/minifaktur-review-completeness/SKILL.md",
+      "computedHash": "66217a0aec1da45a09be5a72536c5c54a5ab687f77fff0afea35cf0011de7e21"
+    },
+    "minifaktur-review-security": {
+      "source": "faffeldt/agents",
+      "sourceType": "github",
+      "skillPath": "skills/minifaktur/minifaktur-review-security/SKILL.md",
+      "computedHash": "e7a6a7115d877104acd9134d4457c2b4c6e1878b32925a4bbf6c88dd282487dc"
+    },
+    "minifaktur-review-spec": {
+      "source": "faffeldt/agents",
+      "sourceType": "github",
+      "skillPath": "skills/minifaktur/minifaktur-review-spec/SKILL.md",
+      "computedHash": "968e382a61b4a90fdde5d3658ba09ee38d63a212f875f136a1c5c41dc0c30109"
+    },
+    "minifaktur-review-ux": {
+      "source": "faffeldt/agents",
+      "sourceType": "github",
+      "skillPath": "skills/minifaktur/minifaktur-review-ux/SKILL.md",
+      "computedHash": "ff8a67e9693a0ab456cddd0e97560605a03ee5b23c3c6e41223ae75251054914"
+    },
+    "minifaktur-setup": {
+      "source": "faffeldt/agents",
+      "sourceType": "github",
+      "skillPath": "skills/minifaktur/minifaktur-setup/SKILL.md",
+      "computedHash": "b3f4a618837cb0e223709b9411261c575406a0e1574b5229bf8f946c99030560"
+    },
+    "minifaktur-spec": {
+      "source": "faffeldt/agents",
+      "sourceType": "github",
+      "skillPath": "skills/minifaktur/minifaktur-spec/SKILL.md",
+      "computedHash": "9b19b9a8be20514bc29243b9bf20da4c27b8c7832866236dc1d518f30d2239c6"
+    }
+  }
+}
