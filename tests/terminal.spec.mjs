@@ -110,7 +110,7 @@ test.describe('with JS', () => {
   });
 
   test('ls lists home, a path, a file and reports a missing path', async ({ page }) => {
-    await expectOutput(page, 'ls', 'CNAME blog/ index.html quit.js style.css terminal.js theme.js');
+    await expectOutput(page, 'ls', 'CNAME about.html blog/ index.html quit.js style.css terminal.js theme.js');
     await expectOutput(page, 'ls blog', 'example-post.html index.html');
     await expectOutput(page, 'ls /', 'home/');
     await expectOutput(page, 'ls ~/blog/index.html', 'index.html');
@@ -224,6 +224,14 @@ test.describe('with JS', () => {
     await expectExactText(page, `felix@tilde:~$ cat CNAME${disk('CNAME')}felix@tilde:~$ pwd/home/felix`);
   });
 
+  test('open shows the profile and returns to the terminal', async ({ page }) => {
+    await run(page, 'open about.html');
+    await expect(page.getByRole('heading', { name: "Hi, I'm Felix" })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Selected experience' })).toBeVisible();
+    await page.keyboard.press('q');
+    await expect(input(page)).toBeFocused();
+  });
+
   test('open shows the rendered post and its breadcrumb returns to the terminal', async ({ page }) => {
     await run(page, 'open blog/example-post.html');
     await expect(page).toHaveURL(/\/blog\/example-post\.html$/);
@@ -302,8 +310,23 @@ test.describe('with JS', () => {
   test('whoami describes Felix and links GitHub', async ({ page }) => {
     const github = 'https://github.com/faffeldt';
     const description = 'I love to build. I focus on building complex things as simple as possible.';
-    await expectOutput(page, 'whoami', `felix ${description} ${github}`);
+    await expectOutput(page, 'whoami', `felix ${description} Software engineer working across systems programming and backend/infra tooling. Use whoami -v to read more. ${github}`);
     await expect(page.getByRole('link', { name: github })).toHaveAttribute('href', github);
+  });
+
+  for (const flag of ['-v', '--verbose']) {
+    test(`whoami ${flag} opens the profile and returns to the terminal`, async ({ page }) => {
+      await run(page, 'cd blog');
+      await run(page, `whoami ${flag}`);
+      await expect(page).toHaveURL(/\/about\.html$/);
+      await expect(page.getByRole('heading', { name: "Hi, I'm Felix" })).toBeVisible();
+      await page.keyboard.press('q');
+      await expect(input(page)).toBeFocused();
+    });
+  }
+
+  test('whoami rejects unknown arguments', async ({ page }) => {
+    await expectOutput(page, 'whoami -x', 'whoami: unrecognized argument: -x');
   });
 
   test('theme lists the themes and marks the current one', async ({ page }) => {
@@ -410,6 +433,7 @@ test.describe('with JS', () => {
     for (const [typed, completed] of [
       ['cl', 'clear '],
       ['  wh', '  whoami '],
+      ['whoami --v', 'whoami --verbose '],
       ['cat bl', 'cat blog/'],
       ['cat blog/e', 'cat blog/example-post.html '],
       ['cat ~/st', 'cat ~/style.css '],
@@ -444,7 +468,7 @@ test.describe('with JS', () => {
       ['c', 'cat cd clear'],
       ['ls -', '-a -h -l -r -t'],
       ['ls -l', '-la -lh -lr -lt'],
-      ['ls ', 'CNAME blog/ index.html quit.js style.css terminal.js theme.js'],
+      ['ls ', 'CNAME about.html blog/ index.html quit.js style.css terminal.js theme.js'],
       ['ls blog/', 'example-post.html index.html'],
       ['theme catppuccin-', 'catppuccin-latte catppuccin-mocha'],
     ]) {
@@ -506,7 +530,7 @@ test.describe('with JS', () => {
   });
 
   test('file list equals the files in docs/ without dotfiles', async ({ page }) => {
-    const files = execFileSync('git', ['ls-files', 'docs'])
+    const files = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', 'docs'])
       .toString()
       .trim()
       .split('\n')
