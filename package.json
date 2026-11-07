@@ -1,7 +1,10 @@
 {
   "name": "tilde",
   "private": true,
+  "type": "module",
   "devDependencies": {
-    "@playwright/test": "1.64.1"
+    "@biomejs/biome": "2.6.2",
+    "@playwright/test": "1.64.1",
+    "vitest": "5.0.5"
   }
 }

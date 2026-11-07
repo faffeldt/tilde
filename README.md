@@ -22,13 +22,16 @@ mise run serve
 Then open <http://localhost:8000/>.
 `docs/` is plain files, so any other static file server works too.
 
-## Check links
+## Check and format
 
 ```sh
+npm ci
 mise run check
+mise run fmt
 ```
 
-This checks local links and assets, but not external URLs.
+`check` runs Biome's linter and format check, then checks local links and assets, but not external URLs.
+`fmt` formats the code and applies safe lint fixes.
 
 ## Run the tests
 
@@ -38,12 +41,15 @@ npx playwright install chromium
 mise run test
 ```
 
+The unit tests in `tests/unit/` cover the shell logic in `docs/lib/` with Vitest.
+The browser tests in `tests/e2e/` cover the pages with Playwright.
+
 ## Add a post
 
 1. Copy an existing post, such as `docs/blog/example-post.html`, to `docs/blog/my-post.html`.
 2. In the copy, update the title, description, breadcrumb, heading, date and body.
 3. Add a link to the top of the list in `docs/blog/index.html`.
-4. Add the post to the file list in `docs/terminal.js`.
+4. Add the post to the file list in `docs/lib/fs.js`.
 
 Keep links and asset paths relative, so the site works under any base path.
 
